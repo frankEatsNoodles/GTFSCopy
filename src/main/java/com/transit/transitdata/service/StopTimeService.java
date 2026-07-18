@@ -1,13 +1,17 @@
 package com.transit.transitdata.service;
 
-import com.transit.transitdata.dto.StopTimes;
 import com.transit.transitdata.dto.StopTimesRepo;
+import org.postgresql.PGConnection;
+import org.postgresql.copy.CopyManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.sql.Connection;
+
+import javax.sql.DataSource;
 
 @Service
 public class StopTimeService {
@@ -18,48 +22,38 @@ public class StopTimeService {
         this.stopTimesRepo = stopTimesRepo;
     }
 
-    public void importStopTimes() throws IOException {
+    @Autowired
+    private DataSource dataSource;
 
-        try (BufferedReader reader = Files.newBufferedReader(
-                Paths.get("C:\\Users\\frank\\Downloads\\GTFSExport\\stop_times.txt"))) {
+    public void importStopTimes() throws Exception {
 
-            reader.readLine(); // Skip header
+        try (Connection conn = dataSource.getConnection()) {
 
-            String line;
-            while ((line = reader.readLine()) != null) {
+            CopyManager copyManager =
+                    conn.unwrap(PGConnection.class).getCopyAPI();
 
-                String[] fields = line.split(",", -1);
+            try (Reader reader = Files.newBufferedReader(
+                    Path.of("C:\\Users\\frank\\Downloads\\GTFSExport\\stop_times.txt"))) {
 
-                StopTimes stopTime = new StopTimes();
-
-                stopTime.setTripId(fields[0]);
-                stopTime.setArrivalTime(fields[1]);
-                stopTime.setDepartureTime(fields[2]);
-                stopTime.setStopId(fields[3]);
-
-                if (!fields[4].isBlank()) {
-                    stopTime.setStopSequence(Integer.parseInt(fields[4]));
-                }
-
-                stopTime.setStopHeadsign(fields[5]);
-
-                if (!fields[6].isBlank()) {
-                    stopTime.setPickupType(Integer.parseInt(fields[6]));
-                }
-
-                if (!fields[7].isBlank()) {
-                    stopTime.setDropOffType(Integer.parseInt(fields[7]));
-                }
-
-                if (!fields[8].isBlank()) {
-                    stopTime.setShapeDistTraveled(Double.parseDouble(fields[8]));
-                }
-
-                if (fields.length > 9 && !fields[9].isBlank()) {
-                    stopTime.setTimepoint(Integer.parseInt(fields[9]));
-                }
-
-                stopTimesRepo.save(stopTime);
+                copyManager.copyIn("""
+                COPY temp_4 (
+                    trip_id,
+                    arrival_time,
+                    departure_time,
+                    stop_id,
+                    stop_sequence,
+                    stop_headsign,
+                    pickup_type,
+                    drop_off_type,
+                    shape_dist_traveled,
+                    timepoint
+                )
+                FROM STDIN
+                WITH (
+                    FORMAT csv,
+                    HEADER true
+                )
+                """, reader);
             }
         }
     }

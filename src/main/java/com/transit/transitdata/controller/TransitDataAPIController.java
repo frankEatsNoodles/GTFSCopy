@@ -38,7 +38,7 @@ public class TransitDataAPIController {
     }
 
     @GetMapping("/help3")
-    public String temp3() throws IOException {
+    public String temp3() throws Exception {
         stopTimeService.importStopTimes();
         return "done";
     }
