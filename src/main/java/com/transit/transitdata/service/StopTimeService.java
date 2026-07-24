@@ -36,7 +36,7 @@ public class StopTimeService {
                     Path.of("C:\\Users\\frank\\Downloads\\GTFSExport\\stop_times.txt"))) {
 
                 copyManager.copyIn("""
-                COPY temp_4 (
+                COPY stoptimes (
                     trip_id,
                     arrival_time,
                     departure_time,

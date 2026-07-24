@@ -26,13 +26,13 @@ public class TransitDataAPIController {
 
 
     @GetMapping("/help")
-    public String temp() throws IOException {
+    public String temp() throws Exception {
         stopService.importStops();
         return "done";
     }
 
     @GetMapping("/help2")
-    public String temp2() throws IOException {
+    public String temp2() throws Exception {
         routeService.importRoutes();
         return "done";
     }

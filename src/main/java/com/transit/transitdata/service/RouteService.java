@@ -1,69 +1,54 @@
 package com.transit.transitdata.service;
 
-import com.transit.transitdata.dto.Routes;
-import com.transit.transitdata.dto.RoutesRepo;
+import org.postgresql.PGConnection;
+import org.postgresql.copy.CopyManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import javax.sql.DataSource;
+import java.io.Reader;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.sql.Connection;
 
 @Service
 public class RouteService {
 
-    private final RoutesRepo routesRepo;
+    @Autowired
+    private DataSource dataSource;
 
-    public RouteService(RoutesRepo routesRepo) {
-        this.routesRepo = routesRepo;
-    }
+    public void importRoutes() throws Exception {
 
-    public void importRoutes() throws IOException {
+        try (Connection conn = dataSource.getConnection()) {
 
-        try (BufferedReader reader = Files.newBufferedReader(
-                Paths.get("C:\\Users\\frank\\Downloads\\GTFSExport\\routes.txt"))) {
+            CopyManager copyManager =
+                    conn.unwrap(PGConnection.class).getCopyAPI();
 
-            // Skip header
-            reader.readLine();
+            try (Reader reader = Files.newBufferedReader(
+                    Path.of("C:\\Users\\frank\\Downloads\\GTFSExport\\routes.txt"))) {
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-
-                String[] fields = line.split(",", -1);
-
-                Routes route = new Routes();
-
-                route.setRouteId(fields[0]);
-                route.setAgencyId(fields[1]);
-                route.setRouteShortName(fields[2]);
-                route.setRouteLongName(fields[3]);
-                route.setRouteDesc(fields[4]);
-
-                if (!fields[5].isBlank()) {
-                    route.setRouteType(Integer.parseInt(fields[5]));
-                }
-
-                route.setRouteUrl(fields[6]);
-                route.setRouteColor(fields[7]);
-                route.setRouteTextColor(fields[8]);
-
-                if (!fields[9].isBlank()) {
-                    route.setRouteSortOrder(Integer.parseInt(fields[9]));
-                }
-
-                if (!fields[10].isBlank()) {
-                    route.setContinuousPickup(Integer.parseInt(fields[10]));
-                }
-
-                if (!fields[11].isBlank()) {
-                    route.setContinuousDropOff(Integer.parseInt(fields[11]));
-                }
-
-                if (fields.length > 12 && !fields[12].isBlank()) {
-                    route.setNetworkId(fields[12]);
-                }
-
-                routesRepo.save(route);
+                copyManager.copyIn("""
+                    COPY routes (
+                        route_id,
+                        agency_id,
+                        route_short_name,
+                        route_long_name,
+                        route_desc,
+                        route_type,
+                        route_url,
+                        route_color,
+                        route_text_color,
+                        route_sort_order,
+                        continuous_pickup,
+                        continuous_drop_off,
+                        network_id
+                    )
+                    FROM STDIN
+                    WITH (
+                        FORMAT csv,
+                        HEADER true
+                    )
+                    """, reader);
             }
         }
     }
