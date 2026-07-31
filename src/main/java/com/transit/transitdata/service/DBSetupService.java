@@ -15,9 +15,9 @@ import java.sql.Connection;
 
 
 @Service
-public class DBConnectionService {
+public class DBSetupService {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(DBConnectionService.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(DBSetupService.class);
 
     @Autowired
     private DataSource dataSource;
