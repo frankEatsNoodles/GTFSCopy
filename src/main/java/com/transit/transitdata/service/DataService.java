@@ -22,7 +22,7 @@ public class DataService {
      *
      * See resources/sql:
      * SELECT COUNT(*) from __get_active_trips('85', '20260717', '14:30:00');
-     * returns the number of active scheduled trips
+     * returns the number of scheduled trips
      *
      * @param routeId route id on db table
      * @param date
@@ -32,10 +32,9 @@ public class DataService {
     public Integer dbRoutes(String routeId, LocalDate date, LocalTime time){
 
         return jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM __get_active_trips(?, ?, ?)",
+                "SELECT COUNT(*) FROM ___get_active_trips(?, ?, ?)",
                 Integer.class,
                 routeId, dayFormatter.format(date), timeFormatter.format(time)
         );
-
     }
 }

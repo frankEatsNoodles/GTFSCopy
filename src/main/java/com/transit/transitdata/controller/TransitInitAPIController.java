@@ -7,12 +7,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 @RestController
 @RequestMapping("/setup/init/db/")
-public class TransitDataAPIController {
+public class TransitInitAPIController {
 
 
     @Autowired
@@ -21,6 +18,13 @@ public class TransitDataAPIController {
     @Autowired
     DataService dataService;
 
+    /**
+     * Setup function for db.
+     * Populates the gtfs data tables
+     *
+     * @return
+     * @throws Exception
+     */
     @GetMapping("/importStops")
     public String initdbImportStops() throws Exception {
         dbConnection.importAll();
