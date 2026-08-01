@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class DataService {
@@ -35,6 +37,14 @@ public class DataService {
                 "SELECT COUNT(*) FROM ___get_active_trips(?, ?, ?)",
                 Integer.class,
                 routeId, dayFormatter.format(date), timeFormatter.format(time)
+        );
+    }
+
+    public List<Map<String, Object>> nearestStop(double lon, double lat, int amount){
+
+        return jdbcTemplate.queryForList(
+                "SELECT * from  ___get_nearest_stops(?, ?, ?)",
+                lon, lat, amount
         );
     }
 }

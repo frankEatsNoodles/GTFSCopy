@@ -12,6 +12,8 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 
 
 @Service
@@ -84,33 +86,61 @@ public class DBSetupService {
                     Path.of("C:\\Users\\frank\\Downloads\\GTFSExport\\stops.txt"))) {
 
                 copyManager.copyIn("""
-                    COPY stops (
-                        stop_id,
-                        stop_code,
-                        stop_name,
-                        tts_stop_name,
-                        stop_desc,
-                        stop_lat,
-                        stop_lon,
-                        zone_id,
-                        stop_url,
-                        location_type,
-                        parent_station,
-                        stop_timezone,
-                        wheelchair_boarding,
-                        level_id,
-                        platform_code
-                    )
-                    FROM STDIN
-                    WITH (
-                        FORMAT csv,
-                        HEADER true
-                    )
-                    """, reader);
+                COPY stops (
+                    stop_id,
+                    stop_code,
+                    stop_name,
+                    tts_stop_name,
+                    stop_desc,
+                    stop_lat,
+                    stop_lon,
+                    zone_id,
+                    stop_url,
+                    location_type,
+                    parent_station,
+                    stop_timezone,
+                    wheelchair_boarding,
+                    level_id,
+                    platform_code
+                )
+                FROM STDIN
+                WITH (
+                    FORMAT csv,
+                    HEADER true
+                )
+                """, reader);
             }
+
+            // Populate PostGIS geometry column
+            try (PreparedStatement stmt = conn.prepareStatement("""
+            UPDATE stops
+            SET location = ST_SetSRID(
+                ST_MakePoint(stop_lon, stop_lat),
+                4326
+            )
+        """)) {
+
+                int updatedRows = stmt.executeUpdate();
+                LOGGER.info("Updated {} stops with location geometry", updatedRows);
+            }
+
+            // Create spatial index if it does not exist
+            try (Statement stmt = conn.createStatement()) {
+
+                stmt.execute("""
+                CREATE INDEX IF NOT EXISTS idx_stops_location
+                ON stops
+                USING GIST(location)
+            """);
+
+                LOGGER.info("Spatial index created");
+            }
+
+        } catch (Exception e) {
+            LOGGER.error("Failed importing stops", e);
+            throw e;
         }
     }
-
     private void importCalendar() throws Exception {
 
         try (Connection conn = dataSource.getConnection()) {
