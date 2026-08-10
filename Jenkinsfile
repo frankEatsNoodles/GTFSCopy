@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                bat 'mvn clean package -DskipTests -Dspring.profiles.active=deploy'
+                sh 'mvn clean package -DskipTests -Dspring.profiles.active=deploy'
             }
         }
     }
