@@ -8,9 +8,9 @@ pipeline {
 
     stages {
         stage('Build') {
-                    steps {
-                        sh 'mvn clean install -U'
-                    }
+            steps {
+                bat 'mvn clean package -DskipTests -Dspring.profiles.active=deploy'
+            }
         }
     }
 
