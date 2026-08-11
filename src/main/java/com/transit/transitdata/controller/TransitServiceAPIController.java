@@ -1,9 +1,10 @@
 package com.transit.transitdata.controller;
 
+import com.transit.transitdata.model.RT.TripRT;
+import com.transit.transitdata.model.RT.VehicleRT;
 import com.transit.transitdata.service.DataService;
-import org.apache.coyote.Response;
+import com.transit.transitdata.service.RTDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,6 +22,9 @@ public class TransitServiceAPIController {
 
     @Autowired
     DataService dataService;
+
+    @Autowired
+    RTDataService rtDataService;
 
     @GetMapping("/routes/{routeId}/active-trips")
     public int getActiveTrips(
@@ -88,6 +93,16 @@ public class TransitServiceAPIController {
         }
 
         return response;
+    }
+
+    @GetMapping("/live/vehicleposition")
+    public ResponseEntity<List<VehicleRT>> getVehiclePosition(){
+        return ResponseEntity.ok(rtDataService.getVehiclePositions());
+    }
+
+    @GetMapping("/live/tripupdate")
+    public ResponseEntity<List<TripRT>> getTripUpdates() {
+        return ResponseEntity.ok(rtDataService.getTripUpdates());
     }
 
 }

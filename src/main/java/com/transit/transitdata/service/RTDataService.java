@@ -1,36 +1,52 @@
 package com.transit.transitdata.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.transit.transitdata.model.StopTimeUpdateRT;
-import com.transit.transitdata.model.TripRT;
-import com.transit.transitdata.model.VehicleRT;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.transit.transitdata.model.RT.StopTimeUpdateRT;
+import com.transit.transitdata.model.RT.TripRT;
+import com.transit.transitdata.model.RT.VehicleRT;
+import com.transit.transitdata.model.RouteAverageSpeed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import com.google.transit.realtime.GtfsRealtime.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RTDataService {
 
+    private final Logger LOGGER = LoggerFactory.getLogger(RTDataService.class);
+
     @Value("${vehicle.position.url}")
     private String ocVehiclePositions;
 
-    @Value("{trip.update.url}")
+    @Value("${trip.update.url}")
     private String ocTripUpdates;
 
     @Value("${oc.api.key}")
     private String apiKey;
 
-    public boolean getVehiclePositions() {
+    private List<VehicleRT> updatedVehicles;
+
+    private List<TripRT> updatedTrips;
+
+    //update positions every 30 seconds
+    @Scheduled(fixedDelay = 30000, initialDelay = 0)
+    public void updateBuses() {
+        this.updatedVehicles = getVehiclePositions();
+        this.updatedTrips = getTripUpdates();
+    }
+
+    public List<VehicleRT> getVehiclePositions() {
 
         try {
             HttpClient client = HttpClient.newHttpClient();
@@ -87,14 +103,13 @@ public class RTDataService {
                     vehicleRTList.add(vehicleRT);
                 }
             }
-            return true;
+            return vehicleRTList;
         } catch(Exception e) {
-            return false;
+            return null;
         }
     }
 
-
-    public boolean getTripUpdates() {
+    public List<TripRT> getTripUpdates() {
 
         try {
             HttpClient client = HttpClient.newHttpClient();
@@ -152,29 +167,58 @@ public class RTDataService {
                         stuRTList.add(stop);
                     }
 
+                    LOGGER.info(tripRT.toString());
                     tripRT.setStopTimeUpdateRT(stuRTList);
                     tripRTList.add(tripRT);
                 }
             }
-            ObjectMapper objectMapper = new ObjectMapper();
 
-            String json = objectMapper.writeValueAsString(tripRTList.get(0));
-            System.out.println(json);
-            return true;
+            return tripRTList;
         } catch(Exception e) {
-            return false;
+            return null;
         }
     }
 
+    /**
+     * Function that takes the current vehicle positions and returns a list of routeIds sorted by average speed.
+     *
+     * @param vehicles
+     * @return
+     */
+    public List<RouteAverageSpeed> getAverageSpeedByRoute(List<VehicleRT> vehicles) {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-
-        RTDataService rt = new RTDataService();
-
-        //rt.getVehiclePositions();
-        rt.getTripUpdates();
-
+        return vehicles.stream()
+                .filter(vehicle ->
+                        vehicle.getRouteId() != null &&
+                                !vehicle.getRouteId().isBlank()
+                )
+                .collect(Collectors.groupingBy(
+                        VehicleRT::getRouteId,
+                        Collectors.averagingDouble(VehicleRT::getSpeed)
+                ))
+                .entrySet()
+                .stream()
+                .map(entry -> new RouteAverageSpeed(
+                        entry.getKey(),
+                        entry.getValue()
+                ))
+                .sorted(
+                        Comparator.comparingDouble(
+                                RouteAverageSpeed::getAverageSpeed
+                        ).reversed()
+                )
+                .toList();
     }
 
+//    public static void main(String[] args)  {
+//
+//        RTDataService rt = new RTDataService();
+//
+//        //rt.getVehiclePositions();
+//        //rt.getTripUpdates();
+//
+//        System.out.println(rt.getAverageSpeedByRoute(rt.getVehiclePositions()));
+//
+//    }
 
 }
