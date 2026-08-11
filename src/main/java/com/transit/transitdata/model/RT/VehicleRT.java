@@ -1,4 +1,4 @@
-package com.transit.transitdata.model;
+package com.transit.transitdata.model.RT;
 
 public class VehicleRT {
 
@@ -107,5 +107,22 @@ public class VehicleRT {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return "VehicleRT{" +
+                "tripId='" + tripId + '\'' +
+                ", routeId='" + routeId + '\'' +
+                ", startTime='" + startTime + '\'' +
+                ", startDate='" + startDate + '\'' +
+                ", scheduledRelationship=" + scheduledRelationship +
+                ", vehicleId='" + vehicleId + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", bearing=" + bearing +
+                ", speed=" + speed +
+                ", timestamp=" + timestamp +
+                '}';
     }
 }

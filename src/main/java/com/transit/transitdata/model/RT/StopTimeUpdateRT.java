@@ -1,4 +1,4 @@
-package com.transit.transitdata.model;
+package com.transit.transitdata.model.RT;
 
 public class StopTimeUpdateRT {
 
@@ -37,5 +37,15 @@ public class StopTimeUpdateRT {
 
     public void setScheduleRelationship(int scheduleRelationship) {
         this.scheduleRelationship = scheduleRelationship;
+    }
+
+    @Override
+    public String toString() {
+        return "StopTimeUpdateRT{" +
+                "stopsequence=" + stopsequence +
+                ", stopId='" + stopId + '\'' +
+                ", arriveTime=" + arriveTime +
+                ", scheduleRelationship=" + scheduleRelationship +
+                '}';
     }
 }

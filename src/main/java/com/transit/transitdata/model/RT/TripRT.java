@@ -1,4 +1,4 @@
-package com.transit.transitdata.model;
+package com.transit.transitdata.model.RT;
 
 import java.util.List;
 
@@ -68,5 +68,18 @@ public class TripRT {
 
     public void setStopTimeUpdateRT(List<StopTimeUpdateRT> stopTimeUpdateRT) {
         this.stopTimeUpdateRT = stopTimeUpdateRT;
+    }
+
+    @Override
+    public String toString() {
+        return "TripRT{" +
+                "tripId='" + tripId + '\'' +
+                ", routeId='" + routeId + '\'' +
+                ", startTime='" + startTime + '\'' +
+                ", startDate='" + startDate + '\'' +
+                ", scheduledRelationship=" + scheduledRelationship +
+                ", vehicleId='" + vehicleId + '\'' +
+                ", stopTimeUpdateRT=" + stopTimeUpdateRT +
+                '}';
     }
 }
