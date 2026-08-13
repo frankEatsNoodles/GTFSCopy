@@ -6,6 +6,7 @@ import com.transit.transitdata.model.RT.VehicleRT;
 import com.transit.transitdata.model.RouteAverageSpeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,14 +42,102 @@ public class RTDataService {
 
     private List<TripRT> updatedTrips;
 
+    @Autowired
+    private DataService db;
+
     //update positions every 30 seconds
-    @Scheduled(fixedDelay = 30000, initialDelay = 0)
+    @Scheduled(fixedDelay = 1500, initialDelay = 0)
     public void updateBuses() {
         this.updatedVehicles = getVehiclePositions();
         this.updatedTrips = getTripUpdates();
     }
 
-    public List<VehicleRT> getVehiclePositions() {
+    public List<RouteAverageSpeed> getAverageSpeedByRoute() {
+
+        List<VehicleRT> vehicles = this.updatedVehicles;
+        List<TripRT> trips = this.updatedTrips;
+
+        Map<String, List<Double>> routeSpeeds = new HashMap<>();
+        List<RouteAverageSpeed> averageSpeeds;
+
+        for (VehicleRT vehicle : vehicles) {
+
+            //remove vehicles with no id
+            if (vehicle.getVehicleId() == null ||
+                    vehicle.getRouteId() == null) {
+                continue;
+            }
+
+            //map the trip
+            TripRT matchingTrip = trips.stream()
+                    .filter(trip ->
+                            trip.getVehicleId() != null &&
+                                    trip.getVehicleId().equals(vehicle.getVehicleId())
+                    )
+                    .findFirst()
+                    .orElse(null);
+
+            if (matchingTrip == null ||
+                    matchingTrip.getStopTimeUpdateRT() == null ||
+                    matchingTrip.getStopTimeUpdateRT().isEmpty()) {
+                continue;
+            }
+
+            //Make sure the trip has started (remove trips that hasnt started yet)
+            boolean hasStarted = matchingTrip.getStopTimeUpdateRT()
+                    .stream()
+                    .anyMatch(stop ->
+                            stop.getStopsequence() > 1
+                    );
+
+            if (hasStarted) {
+
+                routeSpeeds
+                        .computeIfAbsent(
+                                vehicle.getRouteId(),
+                                k -> new ArrayList<>()
+                        )
+                        .add(vehicle.getSpeed());
+            }
+        }
+
+        //Calculate speed
+        averageSpeeds = routeSpeeds.entrySet()
+                .stream()
+                .map(entry -> {
+
+                    double averageSpeed = entry.getValue()
+                            .stream()
+                            .mapToDouble(Double::doubleValue)
+                            .average()
+                            .orElse(0.0);
+
+                    return new RouteAverageSpeed(
+                            entry.getKey(),
+                            averageSpeed*3.6, //convert m/s to km/h
+                            db.getRouteName(entry.getKey())
+                    );
+                })
+                .filter(route -> route.getAverageSpeed() > 0)
+                .sorted(
+                        Comparator.comparingDouble(
+                                RouteAverageSpeed::getAverageSpeed
+                        ).reversed()
+                )
+                .toList();
+
+        return averageSpeeds;
+    }
+
+    public List<TripRT> getUpdatedTrips() {
+        return updatedTrips;
+    }
+
+    public List<VehicleRT> getUpdatedVehicles() {
+        return updatedVehicles;
+    }
+
+    private List<VehicleRT> getVehiclePositions() {
 
         try {
             HttpClient client = HttpClient.newHttpClient();
@@ -79,6 +170,7 @@ public class RTDataService {
 
                     vp = entity.getVehicle();
                     vehicleRT = new VehicleRT();
+                    vehicleRT.setVehicleId(vp.getVehicle().getId());
 
                     //set trip data
                     if (vp.hasTrip()) {
@@ -109,7 +201,7 @@ public class RTDataService {
         }
     }
 
-    public List<TripRT> getTripUpdates() {
+    private List<TripRT> getTripUpdates() {
 
         try {
             HttpClient client = HttpClient.newHttpClient();
@@ -167,7 +259,6 @@ public class RTDataService {
                         stuRTList.add(stop);
                     }
 
-                    LOGGER.info(tripRT.toString());
                     tripRT.setStopTimeUpdateRT(stuRTList);
                     tripRTList.add(tripRT);
                 }
@@ -178,47 +269,5 @@ public class RTDataService {
             return null;
         }
     }
-
-    /**
-     * Function that takes the current vehicle positions and returns a list of routeIds sorted by average speed.
-     *
-     * @param vehicles
-     * @return
-     */
-    public List<RouteAverageSpeed> getAverageSpeedByRoute(List<VehicleRT> vehicles) {
-
-        return vehicles.stream()
-                .filter(vehicle ->
-                        vehicle.getRouteId() != null &&
-                                !vehicle.getRouteId().isBlank()
-                )
-                .collect(Collectors.groupingBy(
-                        VehicleRT::getRouteId,
-                        Collectors.averagingDouble(VehicleRT::getSpeed)
-                ))
-                .entrySet()
-                .stream()
-                .map(entry -> new RouteAverageSpeed(
-                        entry.getKey(),
-                        entry.getValue()
-                ))
-                .sorted(
-                        Comparator.comparingDouble(
-                                RouteAverageSpeed::getAverageSpeed
-                        ).reversed()
-                )
-                .toList();
-    }
-
-//    public static void main(String[] args)  {
-//
-//        RTDataService rt = new RTDataService();
-//
-//        //rt.getVehiclePositions();
-//        //rt.getTripUpdates();
-//
-//        System.out.println(rt.getAverageSpeedByRoute(rt.getVehiclePositions()));
-//
-//    }
 
 }

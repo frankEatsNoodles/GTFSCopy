@@ -47,4 +47,9 @@ public class DataService {
                 lon, lat, amount
         );
     }
+
+    public String getRouteName(String routeId) {
+
+        return jdbcTemplate.queryForObject("SELECT route_long_name FROM public.routes where route_id = ?", String.class, routeId);
+    }
 }

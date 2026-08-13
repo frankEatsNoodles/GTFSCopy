@@ -4,10 +4,12 @@ public class RouteAverageSpeed {
 
     private String routeId;
     private double averageSpeed;
+    private String routeName;
 
-    public RouteAverageSpeed(String routeId, double averageSpeed) {
+    public RouteAverageSpeed(String routeId, double averageSpeed, String routeName) {
         this.routeId = routeId;
         this.averageSpeed = averageSpeed;
+        this.routeName = routeName;
     }
 
     public String getRouteId() {
@@ -16,6 +18,10 @@ public class RouteAverageSpeed {
 
     public double getAverageSpeed() {
         return averageSpeed;
+    }
+
+    public String getRouteName() {
+        return routeName;
     }
 
     @Override

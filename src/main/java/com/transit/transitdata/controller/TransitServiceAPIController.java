@@ -2,6 +2,7 @@ package com.transit.transitdata.controller;
 
 import com.transit.transitdata.model.RT.TripRT;
 import com.transit.transitdata.model.RT.VehicleRT;
+import com.transit.transitdata.model.RouteAverageSpeed;
 import com.transit.transitdata.service.DataService;
 import com.transit.transitdata.service.RTDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,12 +98,17 @@ public class TransitServiceAPIController {
 
     @GetMapping("/live/vehicleposition")
     public ResponseEntity<List<VehicleRT>> getVehiclePosition(){
-        return ResponseEntity.ok(rtDataService.getVehiclePositions());
+        return ResponseEntity.ok(rtDataService.getUpdatedVehicles());
     }
 
     @GetMapping("/live/tripupdate")
     public ResponseEntity<List<TripRT>> getTripUpdates() {
-        return ResponseEntity.ok(rtDataService.getTripUpdates());
+        return ResponseEntity.ok(rtDataService.getUpdatedTrips());
+    }
+
+    @GetMapping("/live/average")
+    public ResponseEntity<List<RouteAverageSpeed>> getAverageBusSpeed(){
+        return ResponseEntity.ok(rtDataService.getAverageSpeedByRoute());
     }
 
 }
