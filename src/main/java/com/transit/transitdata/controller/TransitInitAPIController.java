@@ -25,8 +25,8 @@ public class TransitInitAPIController {
      * @return
      * @throws Exception
      */
-    @GetMapping("/importStops")
-    public String initdbImportStops() throws Exception {
+    @GetMapping("/setup")
+    public String setup() throws Exception {
         dbConnection.importAll();
         return "done";
     }

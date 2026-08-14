@@ -37,6 +37,8 @@ public class DBSetupService {
         LOGGER.info("import calendar dates done");
         this.importTrips();
         LOGGER.info("import trips done");
+        this.importShapes();
+        LOGGER.info("import shapes done");
     }
 
     private void importRoutes() throws Exception {
@@ -265,5 +267,33 @@ public class DBSetupService {
             }
         }
 
+    }
+
+    private void importShapes() throws Exception {
+
+        try (Connection conn = dataSource.getConnection()) {
+
+            CopyManager copyManager =
+                    conn.unwrap(PGConnection.class).getCopyAPI();
+
+            try (Reader reader = Files.newBufferedReader(
+                    Path.of("C:\\Users\\frank\\Downloads\\GTFSExport\\shapes.txt"))) {
+
+                copyManager.copyIn("""
+                COPY shapes (
+                    shape_id,
+                    latitude,
+                    longitude,
+                    sequence,
+                    distance
+                )
+                FROM STDIN
+                WITH (
+                    FORMAT csv,
+                    HEADER true
+                )
+                """, reader);
+            }
+        }
     }
 }
