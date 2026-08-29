@@ -115,7 +115,8 @@ public class RTDataService {
                     return new RouteAverageSpeed(
                             entry.getKey(),
                             averageSpeed*3.6, //convert m/s to km/h
-                            db.getRouteName(entry.getKey())
+                            db.getRouteName(entry.getKey()),
+                            db.getRouteColor(entry.getKey())
                     );
                 })
                 .filter(route -> route.getAverageSpeed() > 0)
@@ -126,6 +127,7 @@ public class RTDataService {
                 )
                 .toList();
 
+        LOGGER.info("Average speeds retrieved");
         return averageSpeeds;
     }
 

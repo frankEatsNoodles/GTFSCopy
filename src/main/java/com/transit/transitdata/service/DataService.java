@@ -1,5 +1,7 @@
 package com.transit.transitdata.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import java.util.Map;
 
 @Service
 public class DataService {
+    private final Logger LOGGER = LoggerFactory.getLogger(DataService.class);
 
     DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
     DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -40,6 +43,13 @@ public class DataService {
         );
     }
 
+    /**
+     *
+     * @param lon
+     * @param lat
+     * @param amount
+     * @return
+     */
     public List<Map<String, Object>> nearestStop(double lon, double lat, int amount){
 
         return jdbcTemplate.queryForList(
@@ -49,7 +59,23 @@ public class DataService {
     }
 
     public String getRouteName(String routeId) {
+        try{
+            return jdbcTemplate.queryForObject("SELECT route_long_name FROM public.routes where route_id = ?", String.class, routeId);
+        }catch(Exception e){
+            return "No route name";
+        }
+    }
 
-        return jdbcTemplate.queryForObject("SELECT route_long_name FROM public.routes where route_id = ?", String.class, routeId);
+    public String getRouteColor(String routeId) {
+        try{
+            return jdbcTemplate.queryForObject("SELECT route_color FROM public.routes where route_id = ?", String.class, routeId);
+        }catch(Exception e){
+            return "No route color";
+        }
+    }
+
+    public List<Map<String, Object>> getShape(String shapeId) {
+        return jdbcTemplate.queryForList(
+                "SELECT * FROM shapes WHERE shape_id = ? ORDER BY sequence",shapeId);
     }
 }
