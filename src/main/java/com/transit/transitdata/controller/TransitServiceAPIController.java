@@ -19,6 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/transit")
+@CrossOrigin(origins = "*")
 public class TransitServiceAPIController {
 
     @Autowired
