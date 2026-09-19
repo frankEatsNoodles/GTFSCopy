@@ -21,7 +21,7 @@ VALUES
     ('OC Transpo', 'New Flyer', 'XD60', 6710, 6759),
     ('OC Transpo', 'New Flyer', 'XE40 Xcelsior', 2101, 2279),
     ('OC Transpo', 'Nova Bus', 'LFS', 4601, 4849),
-    ('OC Transpo', 'Nova Bus', 'LFS', 4850, 4861),
+    ('OC Transpo', 'Nova Bus', 'LFS (GRT)', 4850, 4861),
     ('OC Transpo', 'Nova Bus', 'LFSe+', 2501, 2555);
 
 
