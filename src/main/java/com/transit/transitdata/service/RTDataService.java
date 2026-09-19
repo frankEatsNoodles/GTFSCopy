@@ -45,10 +45,14 @@ public class RTDataService {
     @Autowired
     private DataService db;
 
-    //update positions every 30 seconds
-    @Scheduled(fixedDelay = 1500, initialDelay = 0)
+    //update positions and trips update to every half second
+    @Scheduled(fixedDelay = 500, initialDelay = 0)
     public void updateBuses() {
         this.updatedVehicles = getVehiclePositions();
+    }
+
+    @Scheduled(fixedDelay = 500, initialDelay = 250)
+    public void updatePositions() {
         this.updatedTrips = getTripUpdates();
     }
 
