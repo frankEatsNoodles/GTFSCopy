@@ -131,7 +131,6 @@ public class RTDataService {
                 )
                 .toList();
 
-        LOGGER.info("Average speeds retrieved");
         return averageSpeeds;
     }
 
