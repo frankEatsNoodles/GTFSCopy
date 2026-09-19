@@ -1,5 +1,6 @@
 package com.transit.transitdata.controller;
 
+import com.transit.transitdata.dto.Bus;
 import com.transit.transitdata.model.RT.TripRT;
 import com.transit.transitdata.model.RT.VehicleRT;
 import com.transit.transitdata.model.RouteAverageSpeed;
@@ -112,4 +113,9 @@ public class TransitServiceAPIController {
         return ResponseEntity.ok(rtDataService.getAverageSpeedByRoute());
     }
 
+    @GetMapping("/busfleet/{agency}")
+    public ResponseEntity<List<Bus>> getBusFleet(
+            @PathVariable String agency){
+        return ResponseEntity.ok(dataService.getBusFleet(agency));
+    }
 }
