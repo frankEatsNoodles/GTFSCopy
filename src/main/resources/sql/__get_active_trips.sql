@@ -1,3 +1,5 @@
+--Setup query for the function that returns the active trips at a certain time
+
 -- FUNCTION: public.__get_active_trips(text, text, text)
 
 -- DROP FUNCTION IF EXISTS public.__get_active_trips(text, text, text);

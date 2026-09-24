@@ -1,3 +1,5 @@
+-- Setup query for the function that gets the nearest stops from a position
+
 -- FUNCTION: public.___get_nearest_stops(double precision, double precision, integer)
 
 -- DROP FUNCTION IF EXISTS public.___get_nearest_stops(double precision, double precision, integer);

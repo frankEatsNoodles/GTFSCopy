@@ -1,3 +1,5 @@
+-- Set up queries for the trip start and end times
+
 -- helper table to get_active_trips
 CREATE UNLOGGED TABLE trip_bounds (
     trip_id TEXT PRIMARY KEY,
