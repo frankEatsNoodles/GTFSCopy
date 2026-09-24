@@ -2,6 +2,7 @@ package com.transit.transitdata.service;
 
 import com.transit.transitdata.dto.Bus;
 import com.transit.transitdata.dto.BusRepo;
+import com.transit.transitdata.dto.RoutesRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class DataService {
 
     @Autowired
     private BusRepo busRepo;
+
+    @Autowired
+    private RoutesRepo routesRepo;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -86,7 +90,6 @@ public class DataService {
 
     //returns the list of buses in the transit agency
     public List<Bus> getBusFleet(String agency){
-
         return busRepo.findByTransitAgency(agency);
     }
 }
