@@ -42,15 +42,24 @@ pipeline {
                         echo "$NEXUS_PASSWORD" | docker login "$REGISTRY" \
                             -u "$NEXUS_USER" --password-stdin
 
+                        # Tag the current build for Nexus
                         docker tag ${IMAGE_NAME}:${BUILD_NUMBER} \
                             ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
 
+                        # Tag the same image as latest
+                        docker tag ${IMAGE_NAME}:${BUILD_NUMBER} \
+                            ${REGISTRY}/${IMAGE_NAME}:latest
+
+                        # Push both tags
                         docker push ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
+                        docker push ${REGISTRY}/${IMAGE_NAME}:latest
 
                         docker logout "$REGISTRY"
 
+                        # Remove pipeline-created local tags
                         docker rmi \
                             ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} \
+                            ${REGISTRY}/${IMAGE_NAME}:latest \
                             ${IMAGE_NAME}:${BUILD_NUMBER}
                     '''
                 }
