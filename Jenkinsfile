@@ -48,6 +48,10 @@ pipeline {
                         docker push ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
 
                         docker logout "$REGISTRY"
+
+                        docker rmi \
+                            ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} \
+                            ${IMAGE_NAME}:${BUILD_NUMBER}
                     '''
                 }
             }
