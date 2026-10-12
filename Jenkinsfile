@@ -1,4 +1,4 @@
-
+```groovy
 pipeline {
     agent any
 
@@ -23,8 +23,7 @@ pipeline {
             steps {
                 sh '''
                     docker build \
-                        -t ${IMAGE_NAME}:${BUILD_NUMBER} \
-                        -t ${IMAGE_NAME}:latest .
+                        -t ${IMAGE_NAME}:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -47,11 +46,7 @@ pipeline {
                         docker tag ${IMAGE_NAME}:${BUILD_NUMBER} \
                             ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
 
-                        docker tag ${IMAGE_NAME}:latest \
-                            ${REGISTRY}/${IMAGE_NAME}:latest
-
                         docker push ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}
-                        docker push ${REGISTRY}/${IMAGE_NAME}:latest
 
                         docker logout "$REGISTRY"
                     '''
@@ -64,7 +59,7 @@ pipeline {
         success {
             emailext(
                 subject: "Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Good news. Your build succeeded.\n\nJob: ${env.JOB_NAME}\nBuild: ${env.BUILD_NUMBER}\nURL: ${env.BUILD_URL}",
+                body: "Good news. Your build succeeded.\\n\\nJob: ${env.JOB_NAME}\\nBuild: ${env.BUILD_NUMBER}\\nImage: ${env.REGISTRY}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}\\nURL: ${env.BUILD_URL}",
                 to: "56frankwu@gmail.com"
             )
         }
@@ -72,9 +67,10 @@ pipeline {
         failure {
             emailext(
                 subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Your build failed.\n\nCheck details here: ${env.BUILD_URL}",
+                body: "Your build failed.\\n\\nCheck details here: ${env.BUILD_URL}",
                 to: "56frankwu@gmail.com"
             )
         }
     }
 }
+```
