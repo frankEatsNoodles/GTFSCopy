@@ -27,7 +27,7 @@ pipeline {
             }
         }
 
-        stage('Push to Nexus') {
+        stage('Create and save release') {
             steps {
                 withCredentials([
                     usernamePassword(
@@ -71,7 +71,11 @@ pipeline {
         success {
             emailext(
                 subject: "Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Good news. Your build succeeded.\\n\\nJob: ${env.JOB_NAME}\\nBuild: ${env.BUILD_NUMBER}\\nImage: ${env.REGISTRY}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}\\nURL: ${env.BUILD_URL}",
+                body: "Good news. Your build was successfully released.
+                Job: ${env.JOB_NAME}
+                Build: ${env.BUILD_NUMBER}
+                Image: ${env.REGISTRY}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
+                Dev URL: ${env.BUILD_URL}",
                 to: "56frankwu@gmail.com"
             )
         }
@@ -79,7 +83,8 @@ pipeline {
         failure {
             emailext(
                 subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Your build failed.\\n\\nCheck details here: ${env.BUILD_URL}",
+                body: "Your build failed.
+                Check details here: ${env.BUILD_URL}",
                 to: "56frankwu@gmail.com"
             )
         }
