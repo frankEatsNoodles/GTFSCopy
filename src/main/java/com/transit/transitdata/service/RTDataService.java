@@ -56,6 +56,12 @@ public class RTDataService {
         this.updatedTrips = getTripUpdates();
     }
 
+    /*
+    Helper functions for various tasks
+     */
+
+
+    //Gets the average speed of all the buses with a route
     public List<RouteAverageSpeed> getAverageSpeedByRoute() {
 
         List<VehicleRT> vehicles = this.updatedVehicles;
@@ -133,6 +139,14 @@ public class RTDataService {
 
         return averageSpeeds;
     }
+
+
+    /*
+    Data functions:
+
+    Used to retrieve data
+
+     */
 
     public List<TripRT> getUpdatedTrips() {
         return updatedTrips;

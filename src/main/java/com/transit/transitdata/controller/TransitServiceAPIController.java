@@ -1,11 +1,14 @@
 package com.transit.transitdata.controller;
 
 import com.transit.transitdata.dto.Bus;
+import com.transit.transitdata.dto.Shapes;
 import com.transit.transitdata.model.RT.TripRT;
 import com.transit.transitdata.model.RT.VehicleRT;
 import com.transit.transitdata.model.RouteAverageSpeed;
 import com.transit.transitdata.service.DataService;
 import com.transit.transitdata.service.RTDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,8 @@ import java.util.Map;
 @RequestMapping("/transit")
 @CrossOrigin(origins = "*")
 public class TransitServiceAPIController {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(TransitServiceAPIController.class);
 
     @Autowired
     DataService dataService;
@@ -117,5 +122,27 @@ public class TransitServiceAPIController {
     public ResponseEntity<List<Bus>> getBusFleet(
             @PathVariable String agency){
         return ResponseEntity.ok(dataService.getBusFleet(agency));
+    }
+
+    @GetMapping("live/tripshape/{vehicleId}")
+    public ResponseEntity<List<Shapes>> getTripShape(
+            @PathVariable String vehicleId){
+
+        List<TripRT> trips = rtDataService.getUpdatedTrips();
+
+        for (TripRT temp : trips){
+            if (temp == null){
+                //continue
+            }
+            else if (temp.getVehicleId() == null){
+                //continue
+            }
+            else if (temp.getVehicleId().equals(vehicleId)){
+                //search db for shape
+                return ResponseEntity.ok(dataService.getShapesForTrip(temp.getTripId()));
+            }
+        }
+        //error no vehicle
+        return null;
     }
 }

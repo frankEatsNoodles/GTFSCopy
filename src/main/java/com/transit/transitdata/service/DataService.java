@@ -1,8 +1,6 @@
 package com.transit.transitdata.service;
 
-import com.transit.transitdata.dto.Bus;
-import com.transit.transitdata.dto.BusRepo;
-import com.transit.transitdata.dto.RoutesRepo;
+import com.transit.transitdata.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +25,12 @@ public class DataService {
 
     @Autowired
     private RoutesRepo routesRepo;
+
+    @Autowired
+    private TripsRepo tripsRepo;
+
+    @Autowired
+    private ShapesRepo shapesRepo;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -92,4 +96,17 @@ public class DataService {
     public List<Bus> getBusFleet(String agency){
         return busRepo.findByTransitAgency(agency);
     }
+
+    //Gets trip shape from vehicle id
+    public List<Shapes> getShapesForTrip(String tripId){
+        //make 2 query searchs to prevent eager loading with joins
+        //trip_id is a pk in trips table so only 1 shape_id value
+
+        //get the shape_id from the trips table using trips
+        String shapeId = tripsRepo.findShapeIdfromTripId(tripId);
+
+        //get the shapes from shape_id sorted asc
+        return shapesRepo.findByShapeIdOrderBySequenceDesc(shapeId);
+    }
+
 }
